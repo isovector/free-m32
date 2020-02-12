@@ -141,14 +141,14 @@ rawToLogical _     RawUnknown1   = Nothing
 rawToLogical _     RawUnknown2   = Nothing
 rawToLogical _     RawUnknown3   = Nothing
 rawToLogical _     RawUnknown4   = Nothing
--- rawToLogical _     RawDial1Touch = Nothing -- Just Dial1Touch
--- rawToLogical _     RawDial2Touch = Nothing -- Just Dial2Touch
--- rawToLogical _     RawDial3Touch = Nothing -- Just Dial3Touch
--- rawToLogical _     RawDial4Touch = Nothing -- Just Dial4Touch
--- rawToLogical _     RawDial5Touch = Nothing -- Just Dial5Touch
--- rawToLogical _     RawDial6Touch = Nothing -- Just Dial6Touch
--- rawToLogical _     RawDial7Touch = Nothing -- Just Dial7Touch
--- rawToLogical _     RawDial8Touch = Nothing -- Just Dial8Touch
+rawToLogical _     RawDial1Touch = Nothing -- Just Dial1Touch
+rawToLogical _     RawDial2Touch = Nothing -- Just Dial2Touch
+rawToLogical _     RawDial3Touch = Nothing -- Just Dial3Touch
+rawToLogical _     RawDial4Touch = Nothing -- Just Dial4Touch
+rawToLogical _     RawDial5Touch = Nothing -- Just Dial5Touch
+rawToLogical _     RawDial6Touch = Nothing -- Just Dial6Touch
+rawToLogical _     RawDial7Touch = Nothing -- Just Dial7Touch
+rawToLogical _     RawDial8Touch = Nothing -- Just Dial8Touch
 rawToLogical _     RawVolPress   = Just VolPress
 rawToLogical _     RawUnknown5   = Nothing
 rawToLogical _     RawUnknown6   = Nothing
@@ -207,7 +207,7 @@ main = do
 
 
 dumpChar :: LogicalButton -> String
-dumpChar = pure . toUpper . chr . (+ fromEnum 'a') . fromEnum
+dumpChar = pure . toUpper . chr . (+ fromEnum 'A') . fromEnum
 
 
 unbitWord8 :: Word8 -> [Bool]
