@@ -1,0 +1,8 @@
+resolver: lts-14.0
+
+packages:
+- .
+
+extra-deps:
+- hid-0.2.2
+
