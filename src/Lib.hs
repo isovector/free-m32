@@ -156,22 +156,30 @@ lookupRawButton ws b =
    in testBit (ws !! byte) bit
 
 
+data M32Report = M32Report
+  { m32Raw      :: [RawButton]
+  , m32Logical  :: [LogicalButton]
+  , m32Vol      :: Word8
+  , m32Keyshift :: Word8
+  } deriving (Eq, Ord, Show)
+
+
+getReport :: Device -> IO M32Report
+getReport dev = do
+  Just bs <- readInputReport dev
+  let bytes = drop 1 $ unpack bs
+      rawbuttons = filter (lookupRawButton bytes) [RawShift ..]
+      shifted = elem RawShift rawbuttons
+      logical = mapMaybe (rawToLogical shifted) rawbuttons
+      volume = (bytes !! 23) .&. 15
+      keyshift = (bytes !! 36)
+  pure $ M32Report rawbuttons logical volume keyshift
+
 main :: IO ()
 main = do
   Just dev <- vendorProductSerialDevice 0x17cc 0x1860 Nothing
   forever $ do
-    Just bs <- readInputReport dev
-    let bytes = drop 1 $ unpack bs
-        rawbuttons = filter (lookupRawButton bytes) [RawShift ..]
-        shifted = elem RawShift rawbuttons
-        logical = mapMaybe (rawToLogical shifted) rawbuttons
-
-    print logical
-    -- vol
-    print $ (bytes !! 23) .&. 15
-    -- keyshift
-    print $ (bytes !! 36)
-    print $ fmap (foldMap (show . bool 0 1) . unbitWord8) $ unpack bs
+    print =<< getReport dev
 
 
 unbitWord8 :: Word8 -> [Bool]
