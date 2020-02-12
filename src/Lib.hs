@@ -1,5 +1,11 @@
+{-# LANGUAGE NumDecimals #-}
+
 module Lib where
 
+import Data.Foldable
+import Data.Char
+import Debug.Trace
+import Control.Concurrent
 import Control.Monad
 import Data.Bool
 import Data.Bits
@@ -7,6 +13,10 @@ import System.HID
 import Data.ByteString (ByteString, unpack)
 import Data.Word
 import Data.Maybe
+import Sound.PortMidi
+import Data.Either
+import Data.List
+import System.Process (spawnProcess)
 
 data RawButton
   = RawShift
@@ -83,14 +93,14 @@ data LogicalButton
   | FixedVelocity
   | OctaveUp
   | KeyMode
-  | Dial1Touch
-  | Dial2Touch
-  | Dial3Touch
-  | Dial4Touch
-  | Dial5Touch
-  | Dial6Touch
-  | Dial7Touch
-  | Dial8Touch
+  -- | Dial1Touch
+  -- | Dial2Touch
+  -- | Dial3Touch
+  -- | Dial4Touch
+  -- | Dial5Touch
+  -- | Dial6Touch
+  -- | Dial7Touch
+  -- | Dial8Touch
   | VolPress
   deriving (Eq, Ord, Show, Enum, Bounded)
 
@@ -131,14 +141,14 @@ rawToLogical _     RawUnknown1   = Nothing
 rawToLogical _     RawUnknown2   = Nothing
 rawToLogical _     RawUnknown3   = Nothing
 rawToLogical _     RawUnknown4   = Nothing
-rawToLogical _     RawDial1Touch = Just Dial1Touch
-rawToLogical _     RawDial2Touch = Just Dial2Touch
-rawToLogical _     RawDial3Touch = Just Dial3Touch
-rawToLogical _     RawDial4Touch = Just Dial4Touch
-rawToLogical _     RawDial5Touch = Just Dial5Touch
-rawToLogical _     RawDial6Touch = Just Dial6Touch
-rawToLogical _     RawDial7Touch = Just Dial7Touch
-rawToLogical _     RawDial8Touch = Just Dial8Touch
+-- rawToLogical _     RawDial1Touch = Nothing -- Just Dial1Touch
+-- rawToLogical _     RawDial2Touch = Nothing -- Just Dial2Touch
+-- rawToLogical _     RawDial3Touch = Nothing -- Just Dial3Touch
+-- rawToLogical _     RawDial4Touch = Nothing -- Just Dial4Touch
+-- rawToLogical _     RawDial5Touch = Nothing -- Just Dial5Touch
+-- rawToLogical _     RawDial6Touch = Nothing -- Just Dial6Touch
+-- rawToLogical _     RawDial7Touch = Nothing -- Just Dial7Touch
+-- rawToLogical _     RawDial8Touch = Nothing -- Just Dial8Touch
 rawToLogical _     RawVolPress   = Just VolPress
 rawToLogical _     RawUnknown5   = Nothing
 rawToLogical _     RawUnknown6   = Nothing
@@ -167,19 +177,37 @@ data M32Report = M32Report
 getReport :: Device -> IO M32Report
 getReport dev = do
   Just bs <- readInputReport dev
-  let bytes = drop 1 $ unpack bs
+  let bytes      = drop 1 $ unpack bs
       rawbuttons = filter (lookupRawButton bytes) [RawShift ..]
-      shifted = elem RawShift rawbuttons
-      logical = mapMaybe (rawToLogical shifted) rawbuttons
-      volume = (bytes !! 23) .&. 15
-      keyshift = (bytes !! 36)
+      shifted    = elem RawShift rawbuttons
+      logical    = mapMaybe (rawToLogical shifted) rawbuttons
+      volume     = (bytes !! 23) .&. 15
+      keyshift   = bytes !! 36
   pure $ M32Report rawbuttons logical volume keyshift
+
+
+getNotableDevices :: IO [DeviceID]
+getNotableDevices = do
+  num_devs <- countDevices
+  devs <- traverse getDeviceInfo [0 .. num_devs - 1]
+  pure $ do
+    (dev, idx) <- zip devs [0..]
+    traceM $ show dev
+    guard $ isPrefixOf "KOMPLETE KONTROL M32 MIDI" $ name dev
+    guard $ output dev
+    pure idx
+
 
 main :: IO ()
 main = do
   Just dev <- vendorProductSerialDevice 0x17cc 0x1860 Nothing
   forever $ do
-    print =<< getReport dev
+    rep <- getReport dev
+    for_ (m32Logical rep) $ spawnProcess "xdotool" . ("type" :) . pure . dumpChar
+
+
+dumpChar :: LogicalButton -> String
+dumpChar = pure . toUpper . chr . (+ fromEnum 'a') . fromEnum
 
 
 unbitWord8 :: Word8 -> [Bool]

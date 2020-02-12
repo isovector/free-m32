@@ -23,6 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - hid
 - bytestring
+- PortMidi
+- process
 
 library:
   source-dirs: src

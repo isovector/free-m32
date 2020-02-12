@@ -11,6 +11,13 @@ packages:
       sha256: 4d7e8ff9de0e20cedb95a4671dc49797d907adb550da1ea3689fa16e78d3cd16
   original:
     hackage: hid-0.2.2
+- completed:
+    hackage: PortMidi-0.2.0.0@sha256:0671e36ec72e95138bf396234b205864a8a6d0ee353e09e01cbfd57004c56f40,2383
+    pantry-tree:
+      size: 1818
+      sha256: c9936666afc390560319024c25ecb184e2518ae4d3be5ae14081231091c1f073
+  original:
+    hackage: PortMidi-0.2.0.0
 snapshots:
 - completed:
     size: 523443
